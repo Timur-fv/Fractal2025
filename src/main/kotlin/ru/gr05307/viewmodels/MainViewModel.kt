@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import ru.gr05307.painting.FractalPainter
 import ru.gr05307.painting.convertation.Converter
 import ru.gr05307.painting.convertation.Plain
+import ru.gr05307.rollback.UndoManager
 
 class MainViewModel {
     var fractalImage: ImageBitmap = ImageBitmap(0, 0)
@@ -21,6 +22,7 @@ class MainViewModel {
     private val plain = Plain(-2.0, 1.0, -1.0, 1.0)
     private val fractalPainter = FractalPainter(plain)
     private var mustRepaint by mutableStateOf(true)
+    private val undoManager = UndoManager(maxSize = 100)
 
     /** Обновление размеров окна с сохранением пропорций */
     private fun updatePlainSize(newWidth: Float, newHeight: Float) {
@@ -82,6 +84,8 @@ class MainViewModel {
     fun onStopSelecting() {
         if (selectionSize.width == 0f || selectionSize.height == 0f) return
 
+        undoManager.save(plain.copy())
+
         val aspect = plain.aspectRatio
         var selWidth = selectionSize.width
         var selHeight = selectionSize.height
@@ -109,5 +113,19 @@ class MainViewModel {
 
         selectionSize = Size(0f, 0f)
         mustRepaint = true
+    }
+
+    fun canUndo(): Boolean = undoManager.canUndo()
+
+    fun performUndo() {
+        val prevState = undoManager.undo()
+        if (prevState != null) {
+            plain.xMin = prevState.xMin
+            plain.xMax = prevState.xMax
+            plain.yMin = prevState.yMin
+            plain.yMax = prevState.yMax
+            selectionSize = Size(0f, 0f)
+            mustRepaint = true
+        }
     }
 }
