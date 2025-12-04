@@ -210,8 +210,8 @@ class MainViewModel {
         currentTourFrame = 0
         tourProgress = 0f
 
-        // calculate the total frames (i.e 3 seconds per keyframe at 144fps)
-        val fps = 144
+        // calculate the total frames (i.e 3 seconds per keyframe at 60fps)
+        val fps = 60
         val secondPerKeyframe = 3.0
         totalTourFrames = ((tourKeyframes.size - 1) * secondPerKeyframe * fps).toInt()
 
@@ -257,17 +257,6 @@ class MainViewModel {
                 }
 
             }
-        }
-    }
-
-    fun pauseTour() {
-        isTourPlaying = false
-    }
-
-    fun resumeTour() {
-        if (!isTourPlaying && tourKeyframes.size >= 2) {
-            isTourPlaying = true
-            startTour()
         }
     }
 
