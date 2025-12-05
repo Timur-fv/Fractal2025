@@ -41,7 +41,9 @@ fun SelectionPanel(
     offset: Offset,
     size: Size,
     modifier: Modifier = Modifier,
+    // Добавление от Артема
     onClick: (Offset)->Unit = {},
+    // Конец добавления
     onDragStart: (Offset) -> Unit = {},
     onDragEnd: () -> Unit = {},
     onDrag: (Offset) -> Unit = {},
@@ -50,14 +52,13 @@ fun SelectionPanel(
     onPan: (Offset) -> Unit = {},
 ){
     var dragButton by remember { mutableStateOf<PointerButton?>(null) }
-    // Изменения Артема 7
-    // var isDragging by remember { mutableStateOf(false) }
-    // Конец изменений
 
     Canvas(modifier = modifier
+        // Детект клика
         .pointerInput(Unit) {
             detectTapGestures( onTap = { pos -> onClick(pos) } )
         }
+            // Конец детекта
         .pointerInput(Unit) {
         awaitPointerEventScope {
             while (true) {
@@ -103,12 +104,8 @@ fun SelectionPanel(
                                 else -> {}
                             }
                             dragButton = null
-                            /*Изменения Артема 7*/// isDragging = false
                         }
                     }
-
-                    // Изменения Артема 7
-                    //else -> {}
                 }
             }
         }

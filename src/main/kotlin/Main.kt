@@ -1,11 +1,9 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,6 +11,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import ru.gr05307.ui.PaintPanel
 import ru.gr05307.ui.SelectionPanel
+import ru.gr05307.viewmodels.AppViewModel
+import ru.gr05307.julia.ResizableJuliaPanel
 import ru.gr05307.viewmodels.MainViewModel
 
 // Добавления от Артёма
@@ -30,94 +30,182 @@ import androidx.compose.material.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-// Конец
-
-// Полностью добавленный код от Артема
-class JuliaViewModelWrapper(
-    private val baseViewModel: MainViewModel,
-    private val onJuliaPointSelected: (Complex) -> Unit
-) {
-    // Делегируем все методы базовому ViewModel
-    val fractalImage get() = baseViewModel.fractalImage
-    val selectionOffset get() = baseViewModel.selectionOffset
-    val selectionSize get() = baseViewModel.selectionSize
-
-    fun paint(scope: androidx.compose.ui.graphics.drawscope.DrawScope) = baseViewModel.paint(scope)
-    fun onImageUpdate(image: androidx.compose.ui.graphics.ImageBitmap) = baseViewModel.onImageUpdate(image)
-    fun onStartSelecting(offset: androidx.compose.ui.geometry.Offset) = baseViewModel.onStartSelecting(offset)
-    fun onSelecting(offset: androidx.compose.ui.geometry.Offset) = baseViewModel.onSelecting(offset)
-    fun onStopSelecting() = baseViewModel.onStopSelecting()
-    fun canUndo() = baseViewModel.canUndo()
-    fun performUndo() = baseViewModel.performUndo()
-    fun onPanning(offset: androidx.compose.ui.geometry.Offset) = baseViewModel.onPanning(offset)
-    fun saveFractalToJpg(path: String) = baseViewModel.saveFractalToJpg(path)
-
-    // Добавка Артема. Для отслеживания изменений
-    fun shouldCloseJuliaPanel() = baseViewModel.shouldCloseJuliaPanel
-    fun resetCloseJuliaFlag() = baseViewModel.resetCloseJuliaFlag()
-        // конец добавки
-
-    // Переопределяем обработку кликов
-    fun onPointClicked(x: Float, y: Float) {
-        val re = ru.gr05307.painting.convertation.Converter.xScr2Crt(x, baseViewModel.plain)
-        val im = ru.gr05307.painting.convertation.Converter.yScr2Crt(y, baseViewModel.plain)
-        onJuliaPointSelected(Complex(re, im))
-    }
-}
-// Конец блока
-
-// Весь App переехал в main()
+import ru.gr05307.viewmodels.MainViewModel
+import ru.gr05307.viewmodels.JuliaViewModel
+// Конец добавки
 
 @Composable
 @Preview
-fun App(viewModel: MainViewModel = MainViewModel()) {
+fun App() {
+    val viewModel = remember { AppViewModel() }
+
     MaterialTheme {
-        Column() {
-            Button(onClick = { viewModel.switchToRainbow() }) { Text("Rainbow") }
-            Button(onClick = { viewModel.switchToGrayscale() }) { Text("Grayscale") }
-            //Button(onClick = { viewModel.switchToFire() }) { Text("Fire") }
-            Button(onClick = { viewModel.switchToIce() }) { Text("Ice") }
-            Button(onClick = { viewModel.switchToNewtonColor()}) { Text("NewtonColor") }
-            Button(onClick = { viewModel.switchToMandelbrot() }) { Text("Mandelbrot") }
-            Button(onClick = { viewModel.switchToJulia() }) { Text("Julia") }
-            Button(onClick = { viewModel.switchToNewton() }) { Text("Newton") }
-            Box {
-                PaintPanel(
-                    Modifier.fillMaxSize(),
-                    onImageUpdate = {
-                        viewModel.onImageUpdate(it)
-                    }
-                ) {
-                    viewModel.paint(it)
-                }
-                SelectionPanel(
-                    viewModel.selectionOffset,
-                    viewModel.selectionSize,
-                    Modifier.fillMaxSize(),
-                    onDragStart = viewModel::onStartSelecting,
-                    onDragEnd = viewModel::onStopSelecting,
-                    onDrag = viewModel::onSelecting,
-                    onPan = viewModel::onPanning,
-                )
-                Button(
-                    onClick = { viewModel.performUndo() },
-                    enabled = viewModel.canUndo(),
+        // Артем: Переделал тему. Отдельно рендер фрактала и отдельно рендер окна Юли
+        // Каждому выделяем свой размер
+        FractalApp(viewModel)
+    }
+}
+
+@Composable
+fun FractalApp(viewModel: AppViewModel) {
+    Row(modifier = Modifier.fillMaxSize()) {
+        // Артем: Фрактал сам занимает 70%
+        MainFractalView(
+            viewModel = viewModel.mainViewModel,
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(7f)
+        )
+
+        // Артем: Моя панель Юли, занимает 30%
+        JuliaSidePanel(
+            viewModel = viewModel.juliaViewModel,
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(3f)
+        )
+    }
+}
+
+@Composable
+fun MainFractalView(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier
+) {
+    // Артем: Здесь полный перенос старого содержания темы после апдейта Эмиля
+    Box(modifier = modifier) {
+        PaintPanel(
+            modifier = Modifier.fillMaxSize(),
+            onImageUpdate = { image -> viewModel.onImageUpdate(image) },
+            onPaint = { scope -> viewModel.paint(scope) }
+        )
+        SelectionPanel(
+            viewModel.selectionOffset,
+            viewModel.selectionSize,
+            Modifier.fillMaxSize(),
+            // Артем: Добавлен детект клика
+            onClick = { pos -> viewModel.onPointClicked(pos.x, pos.y) },
+            onDragStart = viewModel::onStartSelecting,
+            onDragEnd = viewModel::onStopSelecting,
+            onDrag = viewModel::onSelecting,
+            onPan = viewModel::onPanning,
+        )
+
+        Button(
+            onClick = { viewModel.performUndo() },
+            enabled = viewModel.canUndo(),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+        ) {
+            Text("Назад")
+        }
+    }
+}
+
+// Артем: Моя часть окна Юли
+@Composable
+fun JuliaSidePanel(
+    viewModel: JuliaViewModel,
+    modifier: Modifier = Modifier
+) {
+    // Получаем значения из ViewModel - теперь они корректные State объекты
+    val currentJuliaPoint = viewModel.currentJuliaPoint
+    val showJuliaPanel = viewModel.showJuliaPanel
+
+    AnimatedVisibility(
+        visible = showJuliaPanel && currentJuliaPoint != null,
+        enter = slideInHorizontally(animationSpec = tween(300)) { it },
+        exit = slideOutHorizontally(animationSpec = tween(300)) { it },
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .background(Color.White)
+                .border(1.dp, Color.Gray)
+        ) {
+            PanelHeader(
+                onClose = { viewModel.closeJuliaPanel() }
+            )
+
+            if (currentJuliaPoint != null) {
+                PointInfoCard(currentJuliaPoint)
+            }
+
+            if (currentJuliaPoint != null) {
+                Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    Text("Назад")
+                    ResizableJuliaPanel(
+                        c = currentJuliaPoint,
+                        onClose = { viewModel.closeJuliaPanel() },
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
         }
     }
 }
 
+// Артем: Ниже Viewшная часть отрисовки блоков информации, окна и точки
+@Composable
+fun PanelHeader(
+    onClose: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colors.primary)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "Множество Жюлиа",
+            color = Color.White,
+            style = MaterialTheme.typography.h6
+        )
+        IconButton(
+            onClick = onClose
+        ) {
+            Icon(
+                Icons.Default.Close,
+                contentDescription = "Закрыть",
+                tint = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun PointInfoCard(c: Complex) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Выбранная точка:",
+                style = MaterialTheme.typography.subtitle1
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "c = ${"%.6f".format(c.re)} + ${"%.6f".format(c.im)}i",
+                style = MaterialTheme.typography.body1
+            )
+        }
+    }
+}
+// Артем: конец View
+
 fun main(): Unit = application {
-
-    var juliaPoints by remember { mutableStateOf<List<Complex>>(emptyList()) }
-
-    // Главное окно
     Window(
         onCloseRequest = ::exitApplication,
         title = "Фрактал - 2025 (гр. 05-307)"

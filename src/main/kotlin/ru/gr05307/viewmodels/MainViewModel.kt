@@ -1,8 +1,6 @@
 package ru.gr05307.viewmodels
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
@@ -44,6 +42,14 @@ class MainViewModel {
     // Обновление размеров окна с сохранением пропорций
     // Флаг для закрытия панели Жюлиа
     var shouldCloseJuliaPanel by mutableStateOf(false)
+    // Артем: Обратная связь о выборе точки
+    var onJuliaPointSelected: ((Complex) -> Unit)? = null
+
+    // Артем: Обратная связь о необходимости закрытия окна
+    var shouldCloseJuliaPanel: ((Boolean) -> Unit)? = null
+
+    // Артем: Флажок для закрытия панели Юли
+    private var _shouldCloseJuliaPanel by mutableStateOf(false)
 
     /** Обновление размеров окна с сохранением пропорций */
     private fun updatePlainSize(newWidth: Float, newHeight: Float) {
