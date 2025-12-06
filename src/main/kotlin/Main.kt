@@ -24,10 +24,12 @@ fun App(viewModel: MainViewModel = MainViewModel()) {
         Column {
             Button(onClick = { viewModel.switchToRainbow() }) { Text("Rainbow") }
             Button(onClick = { viewModel.switchToGrayscale() }) { Text("Grayscale") }
-            Button(onClick = { viewModel.switchToFire() }) { Text("Fire") }
+            //Button(onClick = { viewModel.switchToFire() }) { Text("Fire") }
             Button(onClick = { viewModel.switchToIce() }) { Text("Ice") }
+            Button(onClick = { viewModel.switchToNewtonColor()}) { Text("NewtonColor") }
             Button(onClick = { viewModel.switchToMandelbrot() }) { Text("Mandelbrot") }
-            //Button(onClick = { viewModel.switchToJulia() }) { Text("Julia") }
+            Button(onClick = { viewModel.switchToJulia() }) { Text("Julia") }
+            Button(onClick = { viewModel.switchToNewton() }) { Text("Newton") }
             Box {
                 PaintPanel(
                     Modifier.fillMaxSize(),
