@@ -14,25 +14,17 @@ import ru.gr05307.ui.SelectionPanel
 import ru.gr05307.viewmodels.AppViewModel
 import ru.gr05307.julia.ResizableJuliaPanel
 import ru.gr05307.viewmodels.MainViewModel
-
-// Добавления от Артёма
-import androidx.compose.runtime.*
-import ru.gr05307.julia.JuliaPanel
-// Добавления от Артёма
-import ru.gr05307.julia.JuliaWindow
 import ru.gr05307.math.Complex
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import ru.gr05307.viewmodels.MainViewModel
 import ru.gr05307.viewmodels.JuliaViewModel
-// Конец добавки
+
 
 @Composable
 @Preview
@@ -40,8 +32,6 @@ fun App() {
     val viewModel = remember { AppViewModel() }
 
     MaterialTheme {
-        // Артем: Переделал тему. Отдельно рендер фрактала и отдельно рендер окна Юли
-        // Каждому выделяем свой размер
         FractalApp(viewModel)
     }
 }
@@ -49,7 +39,6 @@ fun App() {
 @Composable
 fun FractalApp(viewModel: AppViewModel) {
     Row(modifier = Modifier.fillMaxSize()) {
-        // Артем: Фрактал сам занимает 70%
         MainFractalView(
             viewModel = viewModel.mainViewModel,
             modifier = Modifier
@@ -57,7 +46,6 @@ fun FractalApp(viewModel: AppViewModel) {
                 .weight(7f)
         )
 
-        // Артем: Моя панель Юли, занимает 30%
         JuliaSidePanel(
             viewModel = viewModel.juliaViewModel,
             modifier = Modifier
@@ -72,44 +60,95 @@ fun MainFractalView(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    // Артем: Здесь полный перенос старого содержания темы после апдейта Эмиля
-    Box(modifier = modifier) {
-        PaintPanel(
-            modifier = Modifier.fillMaxSize(),
-            onImageUpdate = { image -> viewModel.onImageUpdate(image) },
-            onPaint = { scope -> viewModel.paint(scope) }
-        )
-        SelectionPanel(
-            viewModel.selectionOffset,
-            viewModel.selectionSize,
-            Modifier.fillMaxSize(),
-            // Артем: Добавлен детект клика
-            onClick = { pos -> viewModel.onPointClicked(pos.x, pos.y) },
-            onDragStart = viewModel::onStartSelecting,
-            onDragEnd = viewModel::onStopSelecting,
-            onDrag = viewModel::onSelecting,
-            onPan = viewModel::onPanning,
-        )
-
-        Button(
-            onClick = { viewModel.performUndo() },
-            enabled = viewModel.canUndo(),
+    Column(modifier = modifier) {
+        // Панель кнопок сверху
+        Row(
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
+                .fillMaxWidth()
+                .background(Color.LightGray.copy(alpha = 0.1f))
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Назад")
+            Button(
+                onClick = { viewModel.switchToRainbow() },
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Rainbow")
+            }
+            Button(
+                onClick = { viewModel.switchToGrayscale() },
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Grayscale")
+            }
+            Button(
+                onClick = { viewModel.switchToIce() },
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Ice")
+            }
+            Button(
+                onClick = { viewModel.switchToNewtonColor() },
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("NewtonColor")
+            }
+            Button(
+                onClick = { viewModel.switchToMandelbrot() },
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Mandelbrot")
+            }
+            Button(
+                onClick = { viewModel.switchToJulia() },
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Julia")
+            }
+            Button(
+                onClick = { viewModel.switchToNewton() },
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Newton")
+            }
+        }
+
+        // Область с фракталом (занимает всё оставшееся пространство)
+        Box(modifier = Modifier.weight(1f)) {
+            PaintPanel(
+                modifier = Modifier.fillMaxSize(),
+                onImageUpdate = { image -> viewModel.onImageUpdate(image) },
+                onPaint = { scope -> viewModel.paint(scope) }
+            )
+            SelectionPanel(
+                viewModel.selectionOffset,
+                viewModel.selectionSize,
+                Modifier.fillMaxSize(),
+                onClick = { pos -> viewModel.onPointClicked(pos.x, pos.y) },
+                onDragStart = viewModel::onStartSelecting,
+                onDragEnd = viewModel::onStopSelecting,
+                onDrag = viewModel::onSelecting,
+                onPan = viewModel::onPanning,
+            )
+
+            Button(
+                onClick = { viewModel.performUndo() },
+                enabled = viewModel.canUndo(),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Text("Назад")
+            }
         }
     }
 }
 
-// Артем: Моя часть окна Юли
 @Composable
 fun JuliaSidePanel(
     viewModel: JuliaViewModel,
     modifier: Modifier = Modifier
 ) {
-    // Получаем значения из ViewModel - теперь они корректные State объекты
     val currentJuliaPoint = viewModel.currentJuliaPoint
     val showJuliaPanel = viewModel.showJuliaPanel
 
@@ -150,7 +189,6 @@ fun JuliaSidePanel(
     }
 }
 
-// Артем: Ниже Viewшная часть отрисовки блоков информации, окна и точки
 @Composable
 fun PanelHeader(
     onClose: () -> Unit
@@ -203,7 +241,6 @@ fun PointInfoCard(c: Complex) {
         }
     }
 }
-// Артем: конец View
 
 fun main(): Unit = application {
     Window(
@@ -213,5 +250,3 @@ fun main(): Unit = application {
         App()
     }
 }
-
-

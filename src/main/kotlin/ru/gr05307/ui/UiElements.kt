@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.pointer.*
 import kotlinx.coroutines.launch
-// Изменения от Артема этап 3
 import androidx.compose.foundation.gestures.detectTapGestures
 
 @Composable

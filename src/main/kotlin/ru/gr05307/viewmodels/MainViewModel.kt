@@ -22,6 +22,7 @@ import ru.gr05307.ExportFractal.FractalExporter
 import ru.gr05307.painting.*
 import ru.gr05307.painting.FractalFunction
 import ru.gr05307.painting.ColorFunction
+import ru.gr05307.math.Complex
 import ru.gr05307.painting.*
 import ru.gr05307.rollback.UndoManager
 
@@ -30,7 +31,7 @@ class MainViewModel {
     var selectionOffset by mutableStateOf(Offset(0f, 0f))
     var selectionSize by mutableStateOf(Size(0f, 0f))
     val plain = Plain(-2.0,1.0,-1.0,1.0)
-    private val fractalPainter = FractalPainter(plain)
+    //private val fractalPainter = FractalPainter(plain)
     private var mustRepaint by mutableStateOf(true)
     private val undoManager = UndoManager(maxSize = 100)
 
@@ -39,16 +40,10 @@ class MainViewModel {
 
     private val fractalPainter = FractalPainter(plain, currentFractalFunc, currentColorFunc)
 
-    // Обновление размеров окна с сохранением пропорций
-    // Флаг для закрытия панели Жюлиа
-    var shouldCloseJuliaPanel by mutableStateOf(false)
-    // Артем: Обратная связь о выборе точки
-    var onJuliaPointSelected: ((Complex) -> Unit)? = null
-
-    // Артем: Обратная связь о необходимости закрытия окна
     var shouldCloseJuliaPanel: ((Boolean) -> Unit)? = null
 
-    // Артем: Флажок для закрытия панели Юли
+    var onJuliaPointSelected: ((Complex) -> Unit)? = null
+
     private var _shouldCloseJuliaPanel by mutableStateOf(false)
 
     /** Обновление размеров окна с сохранением пропорций */
@@ -140,7 +135,8 @@ class MainViewModel {
 
         selectionSize = Size(0f, 0f)
         mustRepaint = true
-        shouldCloseJuliaPanel = true // Устанавливаем флаг для закрытия
+        _shouldCloseJuliaPanel = true
+        shouldCloseJuliaPanel?.invoke(true)
     }
 
     fun canUndo(): Boolean = undoManager.canUndo()
@@ -154,7 +150,8 @@ class MainViewModel {
             plain.yMax = prevState.yMax
             selectionSize = Size(0f, 0f)
             mustRepaint = true
-            shouldCloseJuliaPanel = true // Устанавливаем флаг для закрытия
+            _shouldCloseJuliaPanel = true
+            shouldCloseJuliaPanel?.invoke(true)
         }
     }
 
@@ -169,7 +166,8 @@ class MainViewModel {
         plain.yMax += dy
 
         mustRepaint = true
-        shouldCloseJuliaPanel = true // Устанавливаем флаг для закрытия
+        _shouldCloseJuliaPanel = true
+        shouldCloseJuliaPanel?.invoke(true)
     }
 
     fun saveFractalToJpg(path: String) {
@@ -177,11 +175,18 @@ class MainViewModel {
         exporter.saveJPG(path)
     }
 
-    // Сброс флага закрытия (вызывается после закрытия панели)
     fun resetCloseJuliaFlag() {
-        shouldCloseJuliaPanel = false
+        _shouldCloseJuliaPanel = false
     }
-}
+
+    // Артем: Обработка клика по точке
+    fun onPointClicked(x: Float, y: Float) {
+        val re = Converter.xScr2Crt(x, plain)
+        val im = Converter.yScr2Crt(y, plain)
+        val complex = Complex(re, im)
+        onJuliaPointSelected?.invoke(complex)
+    }
+
     // --- методы переключения функций и цвета ---
     fun setFractalFunction(f: FractalFunction) {
         fractalPainter.fractalFunc = f
@@ -210,3 +215,4 @@ data class PlainState(
     val yMin: Double,
     val yMax: Double
 )
+
