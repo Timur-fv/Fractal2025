@@ -68,6 +68,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
+import ru.gr05307.viewmodels.AppViewModel
 import ru.gr05307.viewmodels.JuliaViewModel
 
 
@@ -143,31 +144,30 @@ fun MainFractalView(
             ) {
                 Text("Назад")
             }
-
-            // Tour control panel
-            if (viewModel.showTourControls) {
-                TourControlPanel(
-                    viewModel = viewModel,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
-                        .width(300.dp)
-                )
-            }
-
-            // Floating action button to show/hide tour controls
-            FloatingActionButton(
-                onClick = { viewModel.toggleTourControls() },
+        }
+        // Tour control panel
+        if (viewModel.showTourControls) {
+            TourControlPanel(
+                viewModel = viewModel,
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-                backgroundColor = if (viewModel.showTourControls) MaterialTheme.colors.primary else Color.Gray
-            ) {
-                Icon(
-                    if (viewModel.showTourControls) Icons.Default.Close else Icons.Default.PlayArrow,
-                    contentDescription = "Tour controls"
-                )
-            }
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .width(300.dp)
+            )
+        }
+
+        // Floating action button to show/hide tour controls
+        FloatingActionButton(
+            onClick = { viewModel.toggleTourControls() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            backgroundColor = if (viewModel.showTourControls) MaterialTheme.colors.primary else Color.Gray
+        ) {
+            Icon(
+                if (viewModel.showTourControls) Icons.Default.Close else Icons.Default.PlayArrow,
+                contentDescription = "Tour controls"
+            )
         }
     }
 }
