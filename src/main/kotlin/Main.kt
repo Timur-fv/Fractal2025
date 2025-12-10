@@ -317,9 +317,16 @@ fun PointInfoCard(c: Complex) {
 //}
 fun main(): Unit = application {
 //    playWavInBackground("data.wav")
+
+    val viewModel = remember { AppViewModel() }
+
+    viewModel.mainViewModel.isMusicPlaying = true
     MusicForSleep.playFractalTheme("mandelbrot")
     Window(
-        onCloseRequest = ::exitApplication,
+        onCloseRequest = {
+            MusicForSleep.stopAndCloseCurrentTheme()
+            exitApplication()
+        },
         title = "Фрактал - 2025 (гр. 05-307)"
     ) {
         App()

@@ -554,6 +554,9 @@ class MainViewModel {
 
         MusicForSleep.playFractalTheme(type)
 
+        if (!isMusicPlaying) {
+            MusicForSleep.pauseTheme()
+        }
     }
 
     fun setColorFunction(c: ColorFunction, name: String) {
@@ -584,6 +587,21 @@ class MainViewModel {
         plain.height = newPlain.height
         mustRepaint = true
     }
+
+    var isMusicPlaying by mutableStateOf(true)
+        set
+
+    fun toggleMusicPlayback() {
+        if (isMusicPlaying) {
+            MusicForSleep.pauseTheme()
+            isMusicPlaying = false
+        } else {
+            MusicForSleep.resumeTheme()
+            isMusicPlaying = true
+        }
+    }
+
+
 }
 
 data class PlainState(

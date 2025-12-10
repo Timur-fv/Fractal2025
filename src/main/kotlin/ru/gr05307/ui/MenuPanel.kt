@@ -14,11 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
-
 import ru.gr05307.viewmodels.MainViewModel
 import ru.gr05307.serialization.FractalSerializer
 import ru.gr05307.painting.*
-
+import androidx.compose.material.icons.filled.PlayArrow
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
@@ -139,8 +138,21 @@ fun FractalMenu(
                             )
                             Spacer(Modifier.width(8.dp))
                             Text("Отображать множества Жюлиа", style = MaterialTheme.typography.body2)
-                        }
 
+
+                        }
+                        Divider(color = Color.LightGray)
+                        Text("Музыка:", style = MaterialTheme.typography.h6)
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 16.dp)
+                        ) {
+                            PlayerControlButton(viewModel = viewModel)
+                        }
 
                         Divider(color = Color.LightGray)
                         Text("Фрактал:", style = MaterialTheme.typography.h6)
@@ -294,6 +306,8 @@ fun MenuButton(
     }
 }
 
+
+
 @Composable
 fun TourControlPanel(
     viewModel: MainViewModel,
@@ -414,5 +428,33 @@ fun TourControlPanel(
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
         }
+    }
+}
+
+@Composable
+fun PlayerControlButton(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier
+) {
+    val symbol = if (viewModel.isMusicPlaying) "||" else "▶"
+    val buttonBackgroundColor = Color.LightGray
+    val symbolColor = NeutralDark
+
+    Button(
+        onClick = { viewModel.toggleMusicPlayback() },
+        modifier = modifier.size(40.dp),
+
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = buttonBackgroundColor,
+            contentColor = symbolColor
+        ),
+        elevation = ButtonDefaults.elevation(defaultElevation = 4.dp),
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Text(
+            text = symbol,
+            color = symbolColor,
+            style = MaterialTheme.typography.h6
+        )
     }
 }
