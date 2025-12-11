@@ -14,6 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 import ru.gr05307.viewmodels.MainViewModel
 import ru.gr05307.serialization.FractalSerializer
@@ -36,6 +41,7 @@ fun FractalMenu(
     var menuOpen by remember { mutableStateOf(false) }
     val menuButtonPadding = 16.dp
 
+
     Box(modifier = modifier.fillMaxSize()) {
 
         Button(
@@ -55,7 +61,19 @@ fun FractalMenu(
                 contentDescription = if (menuOpen) "Закрыть меню" else "Открыть меню"
             )
         }
-
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 1.dp)
+                .background(Color.White.copy(alpha = 0.5f), shape = RoundedCornerShape(8.dp))
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = "Итераций: ${viewModel.currentNMax}",
+                fontSize = 14.sp,
+                color = Color.Black
+            )
+        }
         Box(modifier = modifier.fillMaxSize()) {
 
             Button(

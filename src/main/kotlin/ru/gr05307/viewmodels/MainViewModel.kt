@@ -38,6 +38,7 @@ import ru.gr05307.painting.ColorFunction
 import ru.gr05307.math.Complex
 import ru.gr05307.rollback.UndoManager
 import java.util.concurrent.Executors
+import ru.gr05307.fractal.calculateIterations
 
 class MainViewModel {
     var showJulia by mutableStateOf(true)
@@ -86,8 +87,10 @@ class MainViewModel {
     var tourProgress by mutableStateOf(0f)
     var showTourControls by mutableStateOf(false)
     var isMenuOpened by mutableStateOf(false)
+    var currentNMax by mutableStateOf(200)
     private var tourJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
 
 
     // track the highest frame number used
@@ -141,6 +144,7 @@ class MainViewModel {
     // Рисование фрактала
     fun paint(scope: DrawScope) = runBlocking {
         updatePlainSize(scope.size.width, scope.size.height)
+        currentNMax = calculateIterations(plain)
 
         if (mustRepaint
             || fractalImage.width != plain.width.toInt()
@@ -178,6 +182,7 @@ class MainViewModel {
         var selWidth = selectionSize.width
         var selHeight = selectionSize.height
 
+
         // Сохраняем пропорции, центрируя выделение
         val selAspect = selWidth / selHeight
         if (selAspect > aspect) {
@@ -194,6 +199,7 @@ class MainViewModel {
             val xMax = Converter.xScr2Crt(selectionOffset.x + selWidth, plain)
             val yMin = Converter.yScr2Crt(selectionOffset.y + selHeight, plain)
             val yMax = Converter.yScr2Crt(selectionOffset.y, plain)
+
 
             plain.xMin = xMin
             plain.xMax = xMax
